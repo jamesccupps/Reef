@@ -1,0 +1,31 @@
+{
+  "key": "Colman_Friesz_2001",
+  "reader": "wave-3 batch w3-33",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "agency copy: USGS Publications Warehouse, report PDF (and the inside-covers PDF for the title page)",
+    "url": "https://pubs.usgs.gov/wri/wri014137/pdf/report.pdf",
+    "file": "docs/research_notes/fetched/v2/Colman_Friesz_2001.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page (inside covers: 'By John A. Colman and Paul J. Friesz', Water-Resources Investigations Report 01-4137, prepared in cooperation with the Massachusetts Department of Environmental Management, Northborough, Massachusetts, 2001) and the USGS landing page",
+    "ok": true
+  },
+  "claims": [
+    {
+      "paper": "§3.1.2",
+      "claim": "groundwater supplies 55 % of inflow at Walden Pond, Massachusetts (Colman & Friesz 2001)",
+      "location": "p. 17 (PDF p. 17), Water-Balance Results and Fig. 9; abstract, p. 1",
+      "quote": "whereas ground-water inflow contributed about 55 percent of the inflow",
+      "conditions": "average annual water budget for 1995–99; Walden Pond is a 24.88-ha glacial kettle lake with NO surface inlet or outlet, so the other 45 % is precipitation falling on the lake surface (1.215 m/yr); groundwater inflow 1.47 m/yr (366,000 m³/yr) is the mean of a contributing-area estimate (1.35 m/yr) and an isotope mass-balance estimate (1.59 m/yr); outflow 74 % seepage to groundwater, 26 % evaporation; residence time 4.8 yr",
+      "verdict": "confirmed",
+      "note": "Right as stated. For the comparison with Hot Brook it is worth saying that Walden has no streams at all, so its 55 % is groundwater against direct precipitation only; a stream-fed lake's groundwater share would be smaller."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://pubs.usgs.gov/wri/wri014137/pdf/wri014137.pdf", "status": 404, "note": "guessed file name; the report is at …/pdf/report.pdf" }
+  ],
+  "notes": "Also in the report: Walden is mesotrophic by areal loading; P inputs 32 kg/yr (swimmers > 50 % of the summer P load), N 858 kg/yr; the hypolimnion goes anoxic before autumn turnover (1999), unlike 1939; a large deep Nitella population."
+}

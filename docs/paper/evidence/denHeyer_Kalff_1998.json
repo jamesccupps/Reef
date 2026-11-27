@@ -1,0 +1,33 @@
+{
+  "key": "denHeyer_Kalff_1998",
+  "reader": "wave-3 batch w3-35",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's (ASLO's) once-free PDF of the article, as a Wayback Machine capture (19 September 2015) of aslo.org/lo/toc/vol_43/issue_4/0695.pdf; Wiley's pdfdirect refused the script (403)",
+    "url": "http://web.archive.org/web/20150919090833id_/http://aslo.org/lo/toc/vol_43/issue_4/0695.pdf",
+    "file": "docs/research_notes/fetched/v2/denHeyer_Kalff_1998.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "den Heyer C. & Kalff J. 1998. Limnol. Oceanogr. 43(4): 695–705, as cited."
+  },
+  "claims": [
+    {
+      "paper": "§3.1.6",
+      "claim": "littoral sediments mineralize about three times as fast as profundal ones",
+      "location": "p. 695 (PDF p. 1), Abstract; p. 698 (PDF p. 4), Table 2 and Results",
+      "quote": "on average, threefold higher than in the profundal sediments",
+      "conditions": "organic-matter (carbon) mineralization measured as DIC + CH4 accumulating over intact cores incubated in the dark at ±2 °C of in situ temperature; nine southern Quebec lakes (Eastern Townships and Laurentians), June–October 1993; Table 2 means (June–August): profundal 7 mmol C m⁻² d⁻¹ (n = 63, mean site depth 11.5 m, water 11 °C), littoral weed bed 29 (n = 67, 1.8 m, 20 °C), littoral sand 21 (n = 52, 1.9 m, 22 °C)",
+      "verdict": "confirmed",
+      "note": "The ratio is of carbon released (DIC + CH4), not oxygen consumed, and it includes the temperature difference: littoral cores sat at ~20–22 °C against ~11 °C for profundal ones; site depth, 'a surrogate variable that incorporates the effect of temperature', explained 60 % of the variation. The paper's paragraph is about the sediment oxygen sink, so it should say 'carbon mineralization' (or 'respiration'). The paper can drop 'abstract' — the full text is read."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.4319/lo.1998.43.4.0695", "status": 403, "note": "Wiley refused the script" }
+  ],
+  "notes": "Other values: individual cores ranged −50 to 112 mmol C m⁻² d⁻¹; more than half (54–100 %) of the sediments' DIC + CH4 came from the littoral zone, yet littoral sediments were < 20 % of epilimnetic water-column-plus-sediment metabolism; in shallow and oligotrophic lakes the sediments carry a larger share of total respiration. CH4 production averaged ~3 mmol m⁻² d⁻¹ against ~14 for DIC."
+}

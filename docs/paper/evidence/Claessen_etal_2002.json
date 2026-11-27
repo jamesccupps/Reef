@@ -1,0 +1,29 @@
+{
+  "key": "Claessen_etal_2002",
+  "reader": "wave-3 batch w3-33",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "author's copy of the published article on the co-author's (A. M. de Roos) University of Amsterdam publications page",
+    "url": "https://staff.fnwi.uva.nl/a.m.deroos/downloads/pdf_pubs/world/Ecology02.pdf",
+    "file": "docs/research_notes/fetched/v2/Claessen_etal_2002.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the title page (Ecology 83(6), 2002, pp. 1660–1675; David Claessen, Catelijne van Oss, André M. de Roos, Lennart Persson)",
+    "ok": true
+  },
+  "claims": [
+    {
+      "paper": "§3.6.10",
+      "claim": "in theory the smallest prey a cannibal can take decides between regulation and single-cohort cycles (Claessen et al. 2002)",
+      "location": "p. 1660 (PDF p. 1), Abstract; pp. 1666–1667 (PDF pp. 7–8), effects of δ; p. 1673 (PDF p. 14), Discussion",
+      "quote": "With low δ, cannibalism regulates recruitment, resulting in coexistence of many year classes.",
+      "conditions": "a physiologically structured model of one cannibalistic fish population (parameterized for Eurasian perch) with one shared zooplankton resource (Daphnia); δ is the LOWER LIMIT OF THE PREY:CANNIBAL LENGTH RATIO (the 'predation window'), not an absolute prey size",
+      "verdict": "confirmed",
+      "note": "The abstract: for large δ cannibalism cannot decimate young-of-year cohorts and size-dependent competition gives recruit-driven single-cohort cycles; low δ gives regulation by cannibalism; intermediate δ alternates the two (with dwarfs and giants). Strictly it is the smallest prey RELATIVE to the cannibal's length (δ = 0.06 for Eurasian perch). The Discussion links this to the sentence's other half: Crystal Lake yellow perch (Sanderson et al. 1999) show cohort dominance resembling single-cohort cycles, which the authors attribute to yellow perch's narrower predation window (higher δ) than Eurasian perch's."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "A crude rule of thumb is given (p. 1673): cannibalism may regulate a population only if δ is smaller than (or close to) the ratio of length at birth (or first feeding) to length at maturation. Upper limit ε governs stunting vs giants, not the dynamics."
+}

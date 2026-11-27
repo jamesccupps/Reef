@@ -1,0 +1,35 @@
+{
+  "key": "DeBonville_etal_2024",
+  "reader": "wave-3 batch w3-35",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "open-access article (CC BY 4.0, stated in the PMC record's licence block): the PMC article page (PMC11020239) as a Wayback Machine capture of 2 March 2025; the live PMC PDF and Europe PMC's render show bot checks to scripts and OUP refused (403), so neither was pursued further",
+    "url": "http://web.archive.org/web/20250302191855id_/https://pmc.ncbi.nlm.nih.gov/articles/PMC11020239/",
+    "file": "docs/research_notes/fetched/v2/DeBonville_etal_2024.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the PMC record's front matter and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "De Bonville J., Côté A. & Binning S. A. 2024. Conserv. Physiol. 12(1): coae015 (published 15 Apr 2024), doi:10.1093/conphys/coae015. A web page: locations are given by section."
+  },
+  "claims": [
+    {
+      "paper": "§3.5, Table 3.5-3 (Pumpkinseed, temperature column)",
+      "claim": "pumpkinseed CTmax 31.2 °C at 10 °C acclimation, ≈ 40.7 °C at 30 °C (Quebec)",
+      "location": "web page, Results ('Thermal tolerance') and Discussion",
+      "quote": "compared to our values of 31.2°C and 40.7°C",
+      "conditions": "laboratory CTmax (loss of equilibrium) at a ramp of ~0.3 °C/min (measured 0.26 ± 0.04); pumpkinseed from Lake Cromwell (Station de Biologie des Laurentides, Québec), small fish (mean TL 7.3–8.1 cm per group, 6.9–9.6 g); acclimated to 10, 15, 20 (fall groups) and 20, 25, 30 °C (summer group); results range 31.20 ± 0.46 to 40.66 ± 0.23 °C; CTmax rose ~0.47 °C per degree of acclimation; the fish carried a natural gradient of parasite infection",
+      "verdict": "confirmed",
+      "note": "The values are the 10 °C and 30 °C groups' means, as the paper says. The authors note the fast ramp: Rooke et al. 2017 found ~30 and 39.5 °C at 10 and 30 °C with a slower ramp (0.066 °C/min), and fish in the wild warming at natural rates may tolerate less. 30 °C is a heat-wave-plus-2 °C scenario, not a lake condition."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11020239/pdf/coae015.pdf", "status": 200, "note": "bot-check page, not the PDF (not pursued)" },
+    { "url": "https://academic.oup.com/conphys/article-pdf/12/1/coae015/57237144/coae015.pdf", "status": 403, "note": "publisher refused the script" },
+    { "url": "https://europepmc.org/articles/PMC11020239?pdf=render", "status": 403, "note": "Cloudflare 'Just a moment' challenge (not pursued, and Europe PMC's other endpoints not used for this item)" }
+  ],
+  "notes": "Other values in the source: CTmin ranged 0.60 ± 0.18 to 8.66 ± 0.47 °C across the acclimation groups; Lake Cromwell's littoral reaches up to 28 °C in heat waves and warmed 24.66 → 27.63 °C in 2 h in August. Supplementary figures (in a zip) were not fetched."
+}

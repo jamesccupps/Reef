@@ -1,0 +1,30 @@
+{
+  "key": "Cole_etal_1988",
+  "reader": "wave-3 batch w3-33",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's own free PDF (Inter-Research back issue of Marine Ecology Progress Series)",
+    "url": "https://www.int-res.com/articles/meps/43/m043p001.pdf",
+    "file": "docs/research_notes/fetched/v2/Cole_etal_1988.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the title page (Mar. Ecol. Prog. Ser. Vol. 43: 1–10, 1988, published March 24; Jonathan J. Cole, Stuart Findlay, Michael L. Pace)",
+    "ok": true
+  },
+  "claims": [
+    {
+      "paper": "§3.3.8",
+      "claim": "across systems bacterial production averages about 20 % of primary production (Cole et al. 1988; abstract only)",
+      "source_value": "20 % (median 16.5 %) is the VOLUMETRIC figure for the photic zone (54 pelagic data sets: 24 freshwater, 30 marine). For the whole water column on an AREAL basis (36 data sets) the mean is 30.6 % (median 27.1 %; the abstract rounds to 30 % and 27 %). The ~30 % that Pace et al. 1990 cite is this areal figure, so both numbers are Cole et al.'s, on different bases",
+      "location": "p. 8 (PDF p. 8), Implications for aquatic food webs; abstract, p. 1; methods, p. 2",
+      "quote": "production was 20 % (median = 16.5 %) of primary production on a volumetric basis",
+      "conditions": "literature synthesis of 70 studies (54 pelagic, fresh and marine), long-term or seasonal means, no single-date data; volumetric data limited to the photic zone (areal photic-zone values divided by photic depth); areal data are for the entire water column; fresh and marine data pooled (no consistent difference found)",
+      "verdict": "corrected",
+      "note": "The digits are right but the basis is missing, and it matters here: the sentence sets the 20 % beside Tulonen's 19–33 % for Lake Pääjärvi, and Pace et al. cite the same paper for ~30 %. Suggested wording: 'across 54 pelagic systems it averaged 20 % of primary production in the photic zone and 31 % for the whole water column on an areal basis (Cole et al. 1988)'. The 'abstract only' tag is out of date: this is the full text."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Other values here: volumetric BP ranged 0.4–153 µg C L⁻¹ d⁻¹ (the abstract says 150), mean 26.4 ± 33.1, median 11.5 (p. 3); log BP = 0.8 log PP − 0.46 (r² ≈ 0.57); areal BP 18–576 mg C m⁻² d⁻¹, mean 213, median 167 (p. 6; the abstract's '118 to 2439' is the areal PRIMARY production range, misattributed to BP in the abstract); bacterial production is about twice macrozooplankton production at a given primary production (IBP lakes: zooplankton production ≈ 12 % of PP, p. 8). Their bacteria–chlorophyll fit is log bacteria = 5.97 + 0.53 log chl a (r² = 0.75), and they report Bird & Kalff's (1984) literature-review slopes as 0.78–0.84 and Bird & Kalff's Quebec-lakes slope as 0.57 (p. 5) — relevant to the Bird & Kalff equation used in the same paragraph of §3.3.8."
+}

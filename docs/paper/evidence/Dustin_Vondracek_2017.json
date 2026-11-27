@@ -1,0 +1,44 @@
+{
+  "key": "Dustin_Vondracek_2017",
+  "reader": "wave-3 batch w3-35",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the published article (Taylor & Francis PDF) as posted openly by the University of Wisconsin–Stevens Point Extension Lakes program on its own resource pages (www3.uwsp.edu/cnr-ap/UWEXLakes/…/restoration-project/), read as a Wayback Machine capture of 23 April 2025 (the live URL now redirects to the university's home page); the figshare item OpenAlex lists holds only the 82-KB supplement",
+    "url": "http://web.archive.org/web/20250423182904id_/https://www3.uwsp.edu/cnr-ap/UWEXLakes/PublishingImages/resources/restoration-project/Nearshore%20Habitat%20and%20Fish%20Assemblages%20along%20a%20Gradient%20of%20Shoreline%20Development.pdf",
+    "file": "docs/research_notes/fetched/v2/Dustin_Vondracek_2017.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Dustin D. L. & Vondracek B. 2017. N. Am. J. Fish. Manage. 37(2): 432–444, as cited. The supplement (Tables S.1–S.3) was not read."
+  },
+  "claims": [
+    {
+      "paper": "§3.2.9",
+      "claim": "a fish index of biological integrity fell as dock density rose (attributed jointly to the LCCMR final report and Dustin & Vondracek 2017)",
+      "source_value": "in 28 Minnesota lakes the NEARSHORE fish IBI (three community-composition metrics from nearshore sampling) declined with dock density, driven by vegetation-dwelling species; the LAKE-WIDE fish IBI did not change significantly",
+      "location": "p. 432 (PDF p. 2), Abstract; p. 437 (PDF p. 7), Results and Figure 4; PDF p. 12, Discussion",
+      "quote": "Nearshore ﬁsh IBI declined with increasing development, but the lake-wide IBI did not change",
+      "conditions": "28 small (40–200 ha candidate pool), mesotrophic lakes in Minnesota's Laurentian Mixed Forest province, chosen in dock-density quintiles from 0 to 24 docks/km (dock counts from 2008–2010 aerial photos); 333 nearshore sites, 27,050 fish of 38 species; lake-wide IBI from MNDNR gill- and trap-net surveys",
+      "verdict": "corrected",
+      "note": "The published paper does not support an unqualified 'fish IBI fell': only the nearshore IBI and its vegetation-dwelling metric fell (curvilinear, a rapid drop between 10 and 15 docks/km); the lake-wide IBI and the intolerant and small-benthic metrics did not. The 11-lake statement belongs to the LCCMR report, not to this paper."
+    },
+    {
+      "paper": "§3.2.9",
+      "claim": "in 11 northern Minnesota lakes, emergent vegetation became more likely with distance from docks (attributed jointly to the LCCMR final report and Dustin & Vondracek 2017)",
+      "location": "p. 433 (PDF p. 3), Introduction and Methods; p. 437 (PDF p. 7), Results; PDF p. 11, Discussion",
+      "quote": "Emergent vegetation had a signiﬁcant, negative relationship (P = 0.046) with dock density.",
+      "conditions": "lake-level comparison across 28 lakes, emergent abundance scored from stem counts in a sampling ring at 0.3, 0.6 and 0.9 m depth on transects at 30-m sites",
+      "verdict": "unsupported",
+      "note": "This paper studied 28 lakes, not 11, and has no distance-from-dock analysis: it cites Beck et al. (2013a) for higher emergent and floating richness away from docks and Lepore (2013) for lower macrophyte density next to docks. Its own result is that emergent vegetation declined as lake-wide dock density rose (floating and submersed vegetation were unrelated to development). Cite the 11-lake dock-distance result to the LCCMR report (Lepore's thesis work) alone, and cite Dustin & Vondracek for the 28-lake result."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [
+    { "url": "https://www3.uwsp.edu/cnr-ap/UWEXLakes/PublishingImages/resources/restoration-project/Nearshore%20Habitat%20and%20Fish%20Assemblages%20along%20a%20Gradient%20of%20Shoreline%20Development.pdf", "status": 200, "note": "the live URL now redirects to the UWSP home page (no article); the Wayback capture was used" },
+    { "url": "https://ndownloader.figshare.com/files/7797616", "status": null, "note": "not fetched: figshare's API lists this as the article's 82-KB supplement (ujfm_a_1280567_sm5340.pdf), not the article" }
+  ],
+  "notes": "Other results: coarse woody structure declined significantly and rapidly with dock density (P = 0.019); shoreland habitat scores declined (P = 0.001); the number of nearshore fish species rose with dock area but was better explained by lake area. The research note (shoreline_development_effects.md) says the LCCMR dock-halo study was 'published as Dustin & Vondracek 2017' — it was not: the published paper is the 28-lake fish-assemblage part of the same project."
+}

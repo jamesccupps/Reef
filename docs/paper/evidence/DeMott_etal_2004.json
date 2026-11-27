@@ -1,0 +1,33 @@
+{
+  "key": "DeMott_etal_2004",
+  "reader": "wave-3 batch w3-35",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the publisher's (ASLO's) once-free PDF of the article, as a Wayback Machine capture (2 October 2012) of www.aslo.org/lo/toc/vol_49/issue_4_part_2/1408.pdf; Wiley's pdfdirect refused the script (403)",
+    "url": "http://web.archive.org/web/20121002171625id_/http://www.aslo.org/lo/toc/vol_49/issue_4_part_2/1408.pdf",
+    "file": "docs/research_notes/fetched/v2/DeMott_etal_2004.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "DeMott W. R., Edington J. R. & Tessier A. J. 2004. Limnol. Oceanogr. 49(4, part 2): 1408–1416, as cited."
+  },
+  "claims": [
+    {
+      "paper": "§3.3.7",
+      "claim": "small Michigan lakes showed \"strong energy limitation and weak and sporadic P limitation\" of Daphnia",
+      "location": "p. 1408 (PDF p. 1), Abstract; p. 1409 (PDF p. 2), Methods and Table 1; PDF pp. 5 and 7, Results and Discussion",
+      "quote": "indicate strong energy limitation and weak and sporadic P limitation",
+      "conditions": "four small, thermally stratified lakes near Kellogg Biological Station, Michigan (Lawrence, Warner, Little Mill, Baker: 4.8–23.8 ha, maximum depth 7.5–14.0 m, spring TP 8.5–25.1 µg/L), each studied for 5 days in June–July 2001; growth assays of juvenile D. pulex × pulicaria on < 62-µm seston from four depth strata, with phosphate or Synechococcus supplements; centrarchids the dominant fish; large Daphnia (D. dentifera, D. pulicaria) dominated the zooplankton of all four lakes",
+      "verdict": "confirmed",
+      "note": "The quote is the abstract's, and the full text bears it out (\"effects of P supplements on Daphnia growth were weak and sporadic\"; food limitation \"largely a consequence of energy limitation\"). The paper can drop 'abstract only'. Context the paper's use should carry: these were deep, stratified lakes with abundant Daphnia, and the strong food limitation was tied to Daphnia's own grazing (biomass > 100 µg/L, grazing > 20 % per day), independent of trophic state — not the shallow, Daphnia-poor setting of the analogs."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.4319/lo.2004.49.4_part_2.1408", "status": 403, "note": "Wiley refused the script" }
+  ],
+  "notes": "The paper's sentence calls it 'abstract only'; the full text is now read. Growth improved with depth and was highest on resources from a deep sulfur-bacteria layer partly protected from grazing by low oxygen. Epilimnion 23–25 °C in all four lakes."
+}

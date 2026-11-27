@@ -1,0 +1,39 @@
+{
+  "key": "Cole_Caraco_1998",
+  "reader": "wave-3 batch w3-33",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the authors' institution's reprint page: Cary Institute of Ecosystem Studies public reprint PDF",
+    "url": "https://www.caryinstitute.org/sites/default/files/public/reprints/Atmospheric_exchange_of_carbon_dioxide_in_a_low-wind_oligotrophic_lake.pdf",
+    "file": "docs/research_notes/fetched/v2/Cole_Caraco_1998.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the title page (Limnol. Oceanogr. 43(4), 1998, 647–656; Jonathan J. Cole and Nina F. Caraco)",
+    "ok": true
+  },
+  "claims": [
+    {
+      "paper": "§3.1.6",
+      "claim": "at 15-ha Mirror Lake, New Hampshire, k₆₀₀ was independent of wind over a 50-day period (Cole & Caraco 1998, abstract)",
+      "location": "p. 647 (PDF p. 1), Abstract; p. 649 (PDF p. 3), wind; p. 652 (PDF p. 6), Results and Table 1",
+      "quote": "k was independent of wind speed over the 50-d summer stratification period and averaged",
+      "conditions": "whole-lake SF₆ addition to the epilimnion on 10 June 1996, summer stratification; Mirror Lake 15 ha, zmax 10 m, dimictic, softwater, oligotrophic, sheltered from the prevailing NW wind; mean daily wind at 10 m 1.39 m s⁻¹ (ice-free 1991–95), hourly wind > 4 m s⁻¹ only 4.3 % of the time; during the experiment short-term wind varied 0.09–4.2 m s⁻¹ with no significant relation to k (Table 1)",
+      "verdict": "confirmed",
+      "note": "The introduction (p. 648) says the SF₆ addition covered 'a 70-d period'; the abstract and results say 50 d. k was better correlated with rain than with wind (residual k = 0.11 × rain, r² = 0.49). The '(abstract)' tag can go: the full text is open."
+    },
+    {
+      "paper": "§3.1.6",
+      "claim": "the gas-transfer velocity k₆₀₀ was 0.64 m d⁻¹",
+      "kind": "arithmetic",
+      "location": "p. 647 (PDF p. 1), Abstract; p. 652 (PDF p. 6)",
+      "quote": "averaged 2.65 ? 0.12 cm h-I (95% CI; normalized to a Schmidt number of 600)",
+      "conditions": "k₆₀₀ from the surface-water SF₆ series (n = 88 half-day to several-day periods), Schmidt-number exponent −0.67",
+      "verdict": "confirmed",
+      "note": "2.65 cm h⁻¹ × 24 h = 63.6 cm d⁻¹ = 0.636 m d⁻¹ → 0.64 m d⁻¹. Other estimates in the paper: 1.9 cm h⁻¹ (exponential fit to whole-lake SF₆ mass), 1.6 (fit to the surface series), 2.69 ± 0.9 (period-by-period profile masses, range 1.4–4.8) — i.e. 0.38–0.65 m d⁻¹. The quote's '?' and 'h-I' are the PDF text layer's rendering of '±' and 'h⁻¹'."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Useful beside the Vachon & Prairie computation in the same paragraph: Cole & Caraco fit whole-lake k against wind for Mirror Lake plus nine other lakes, k₆₀₀ = 2.07 + 0.215 U₁₀^1.7 (cm h⁻¹; r² = 0.61; n = 192 in the text, 193 beside the equation; p. 653, Fig. 8). At 2.5 and 6.5 m s⁻¹ it gives 3.09 and 7.25 cm h⁻¹ = 0.74 and 1.74 m d⁻¹, about half the 1.6 and 3.2 m d⁻¹ the paper takes from Vachon & Prairie (whose model adds lake area, which raises k for the 2.8–3.6-km² Hot Brook lakes). Mirror Lake was always CO₂-supersaturated (mean pCO₂ 726 ± 39 µatm, 360–2,000) and lost 26–50 g C m⁻² yr⁻¹ to the air depending on how k is modelled; diel CO₂ swing ~2 µM (57 µatm) at peak production."
+}

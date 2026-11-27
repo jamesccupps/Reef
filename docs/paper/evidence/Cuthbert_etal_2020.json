@@ -1,0 +1,32 @@
+{
+  "key": "Cuthbert_etal_2020",
+  "reader": "wave-3 batch w3-33",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "PubMed Central full text (PMC7319243); open access under CC BY 4.0",
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7319243/",
+    "file": "docs/research_notes/fetched/v2/Cuthbert_etal_2020.html"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "Crossref and the PMC record (Ecol Evol 2020 Jun 1; 10(12): 5946–5962; nine authors, Cuthbert … Alexander, as in the ledger)",
+    "ok": true
+  },
+  "claims": [
+    {
+      "paper": "§3.7.5",
+      "claim": "the functional response is usually type II, rising to a plateau, in experiments with juvenile largemouth (Alexander et al. 2015; Cuthbert et al. 2020; abstracts only)",
+      "location": "PMC web page: Abstract (Results); Methods 2.2 and Table 1; Results, functional responses (Table 2, Fig. 2)",
+      "quote": "Type II functional responses were displayed by both predators across all",
+      "conditions": "laboratory, South Africa: young-of-year largemouth bass (and bluegill) from two reservoirs, three predator size classes (bass 50, 73 and 99 mm; 1.7, 5.0 and 11.4 g), each fed one of three sizes of Mozambique tilapia (11–18.5 mm) at 2–32 (small prey also 64) per size-scaled cage; 1-h trials at 18 ± 1 °C after 72 h without food; prey not replaced (Rogers' random predator equation); 358 trials",
+      "verdict": "confirmed",
+      "note": "Every predator × prey size combination gave a type II response; the one exception in form, large bass on small prey, did not reach an asymptote within the densities offered but was still best fitted by the type II model. The 'abstracts only' tag can go for this paper (CC BY full text). Also relevant to the next sentence of §3.7.5: attack rates peaked at intermediate predator:prey body-mass ratios, and handling time grew with prey size."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [
+    { "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/ece3.6332", "status": 403, "note": "Wiley refused the script; the PMC copy was used" },
+    { "url": "https://europepmc.org/articles/PMC7319243?pdf=render", "status": 403, "note": "refused; the PMC page was used" }
+  ],
+  "notes": "Prey were a tropical cichlid in small cages over one hour, so the rates themselves do not transfer to a lake; only the response form does."
+}

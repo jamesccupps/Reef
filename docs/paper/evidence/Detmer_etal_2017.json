@@ -1,0 +1,31 @@
+{
+  "key": "Detmer_etal_2017",
+  "reader": "wave-3 batch w3-35",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "open-access article (CC BY 4.0, stated on the article's first page): the publisher's PDF as deposited in the NOAA Institutional Repository (repository.library.noaa.gov, noaa/68860)",
+    "url": "https://repository.library.noaa.gov/view/noaa/68860/noaa_68860_DS1.pdf",
+    "file": "docs/research_notes/fetched/v2/Detmer_etal_2017.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the title page and Crossref",
+    "ok": true,
+    "corrections": "",
+    "note": "Detmer T., McCutchan J. H. Jr. & Lewis W. M. Jr. 2017. Inland Waters 7(4): 440–448 (published online 31 Oct 2017), as cited (the title page gives the two senior authors' 'Jr.')."
+  },
+  "claims": [
+    {
+      "paper": "§3.5.7",
+      "claim": "95 % (by biomass) of the lake zooplankton entering an outlet was lost within 500 m below the outlets of 12 Colorado mountain lakes",
+      "location": "p. 440 (PDF p. 2), Abstract; p. 441 (PDF p. 3), Methods and Table 1; pp. 443–445 (PDF pp. 5–7), Results (Fig. 2) and Discussion",
+      "quote": "exported to streams from both types of lakes, 95% was lost within 500 m",
+      "conditions": "12 small oligotrophic lakes in Rocky Mountain National Park, Colorado (6 with brook or cutthroat trout, 6 without fish; 1.1–6.0 ha, mean depths 0.6–6.2 m, elevations 3021–3469 m, outlet water 9.3–16.2 °C); outlet streams shallow (< 0.5 m); zooplankton sampled at midday at 1, 10, 50, 100, 200 and 500 m below the first riffle, 29 July – 22 August 2013, near the annual zooplankton peak",
+      "verdict": "confirmed",
+      "note": "The loss is of zooplankton biomass (mass flux, g dry mass m⁻² d⁻¹), for both lake types, and fastest in the first 10 m (~50 %). Large zooplankton (> 1 µg) were lost faster than small ones; the authors judge fish predation in the stream not the main cause (interception by the channel and macroinvertebrates). The paper can drop 'abstract' — the full text is read."
+    }
+  ],
+  "verdict": "confirmed",
+  "tried": [],
+  "notes": "Relevant to Hot Brook: the authors contrast Demi et al. (2012), who found in Maine that alewife lakes reduced large zooplankton within the lakes but not the zooplankton in their outlet streams, citing shallow outlets, littoral macrophytes near the outlet and other planktivores as possible confounders, and suggest Demi's sampling missed the first 10 m. Export was greater at night (diel vertical migration), so noon samples underestimate the diel flux."
+}

@@ -1,0 +1,30 @@
+{
+  "key": "Cordero_1995",
+  "reader": "wave-3 batch w3-33",
+  "date": "2026-11-26",
+  "obtained": {
+    "how": "the journal's free archive copy at Natuurtijdschriften (the Dutch natural-history journals repository), the URL in the ledger entry",
+    "url": "https://natuurtijdschriften.nl/pub/593562/NOIOS1995004006004.pdf",
+    "file": "docs/research_notes/fetched/v2/Cordero_1995.pdf"
+  },
+  "status": "read-full",
+  "bibliography": {
+    "checked_against": "the article pages (Notul. odonatol., Vol. 4, No. 6, December 1, 1995; the article is pp. 103–105 of the issue's pp. 93–108; author A. Cordero, Universidade de Vigo)",
+    "ok": true
+  },
+  "claims": [
+    {
+      "paper": "§3.8.7",
+      "claim": "in a Spanish pond, most exuviae were on emergent stems 6–20 cm above the water (Cordero 1995, relayed by a search summary)",
+      "source_value": "Emergence height differs by species and rises with larval size (r = 0.62, n = 12 species, P = 0.033). Table I means run from 5.09 cm (Ischnura graellsii, n = 85, range 1–46) to 48.07 cm (Orthetrum cancellatum, n = 45, 10–119): six species average under 20 cm, six 30–48 cm. The '6–20 cm' is for ONE species, Lestes viridis (n = 423, range 3–132), from Cordero's 1988 analysis of the same data. Exuviae of six species were all on emergent vegetation; L. viridis, Boyeria irene, Anax imperator and the three libellulids also emerged away from the water, on the ground or other supports 5–270 cm from it",
+      "location": "p. 105 (PDF p. 3), text; p. 104 (PDF p. 2), Table I and Fig. 1",
+      "quote": "showed that most exuviae were found at a height of 6-20 cm",
+      "conditions": "a man-made pond at Salcedo (Pontevedra, NW Spain), 60 × 10 m, concrete walls 4 m high on the long sides, emergent plants (Digitaria paspalloides, Cyperus vegetus, Typha latifolia) only on the short sides; exuviae collected on opportunistic visits 1985–86; some species' data from other ponds and rivers in Pontevedra",
+      "verdict": "corrected",
+      "note": "A single species' range was relayed as the whole pond's. Suggested wording: 'In a Spanish pond, emergence height rose with larval size, from a mean of 5 cm for Ischnura to 30–48 cm for aeshnids and libellulids; most Lestes viridis exuviae were 6–20 cm up (Cordero 1995).' The pond's supports were unusually limited (concrete walls), which the author notes may shape the heights. The 'relayed by a search summary' tag can go."
+    }
+  ],
+  "verdict": "corrected",
+  "tried": [],
+  "notes": "Mean ± SE (n) heights from Table I (read on the page image): I. graellsii 5.09 ± 0.59 (85); L. viridis 19.12 ± 0.91 (423); L. virens 11.98 ± 0.83 (103); Platycnemis latipes 16.31 ± 2.11 (16); Boyeria irene 46.08 ± 7.38 (24); Anax imperator 43.08 ± 3.87 (36); Aeshna mixta 30.25 ± 6.87 (4); Gomphus pulchellus 17.75 ± 9.18 (4); Onychogomphus uncatus 17.40 ± 4.27 (5); Orthetrum cancellatum 48.07 ± 3.47 (45); Libellula depressa 30.70 ± 1.73 (37); Sympetrum striolatum 34.73 ± 1.56 (146)."
+}
